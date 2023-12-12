@@ -41,7 +41,7 @@ if ($d['method'] == "identify")
     {
         $response->error = "Invalid request";
         $response->code = "INVALID_REQ";
-        die_json($request);
+        die_json($response);
     }
     $i = 0;
     if (strstr($d['auth'],"@"))
