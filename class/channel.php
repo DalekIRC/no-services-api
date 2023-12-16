@@ -2,7 +2,7 @@
 
 class Channel {
 
-    static function Register($channel, &$error, &$errorcode)
+    public static function Register($channel, &$error, &$errorcode)
     {
         $conn = sqlnew();
         $stmt = $conn->prepare("INSERT INTO userv_channel (channel_name) VALUES (:name)");
@@ -10,7 +10,7 @@ class Channel {
         return $stmt->rowCount();
     }
     
-    static function find($name)
+    public static function find($name)
     {
         $chan =  self::get($name);
         if (!$chan)
@@ -21,7 +21,7 @@ class Channel {
     }
 
     /** Helper function for "find" */
-    static function get($lookup)
+    public static function get($lookup)
     {
         $name = strtolower($lookup);
         $conn = sqlnew();
@@ -35,7 +35,7 @@ class Channel {
         return null;
     }
 
-    static function get_meta($id)
+    public static function get_meta($id)
     {
         $conn = sqlnew();
         $stmt = $conn->prepare("SELECT * FROM userv_channel_meta WHERE channel_id = :id LIMIT 1");
@@ -47,7 +47,7 @@ class Channel {
         }
         return null;
     }
-    static function list()
+    public static function list()
     {
         $conn = sqlnew();
         $sql = "SELECT * FROM userv_channel";

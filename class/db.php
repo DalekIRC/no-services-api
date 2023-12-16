@@ -68,7 +68,7 @@ $sql =
     );
     CREATE TABLE IF NOT EXISTS userv_account_meta (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        user_id VARCHAR(255) NOT NULL,
         meta_name VARCHAR(255),
         meta_value TEXT
     );

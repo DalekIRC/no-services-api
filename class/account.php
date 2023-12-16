@@ -1,7 +1,16 @@
 <?php
 
 class Account {
-    static function Register($account, $email, $password, &$error, &$errorcode)
+
+    public $user = NULL;
+    function __construct($name)
+    {
+        $user = self::find_by("account", $name);
+        if ($user)
+            $this->user = (object)["user" => $user->{0}, "meta" => self::get_meta_all($name)];
+    }
+
+    public static function Register($account, $email, $password, &$error, &$errorcode)
     {
         if (self::find_by("account", $account))
         {
@@ -29,15 +38,13 @@ class Account {
             $errorcode = "BAD_ACCOUNT_NAME";
             return 0;
         }
-
-        $password = password_hash($password, PASSWORD_ARGON2ID);
         $conn = sqlnew();
         $stmt = $conn->prepare("INSERT INTO userv_account (account_name, email, password) VALUES (:name, :email, :password)");
         $stmt->execute(["name" => $account, "email" => $email, "password" => $password]);
         return $stmt->rowCount();
     }
 
-    static function identify($account = NULL, $email = NULL, $password)
+    public static function identify($account = NULL, $email = NULL, $password)
     {
         $account = strtolower($account);
         if ($account)
@@ -65,7 +72,7 @@ class Account {
      * "account"
      * "email"
      */
-    static function find_by($type, $lookup)
+    public static function find_by($type, $lookup)
     {
         if (!$type || ($type != "account" && $type != "email"))
             return null;
@@ -83,12 +90,46 @@ class Account {
         }
         return null;
     }
-    static function list()
+    public static function list()
     {
         $conn = sqlnew();
         $sql = "SELECT * FROM userv_account";
         $ret = $conn->query($sql);
         return $ret->fetchAll(PDO::FETCH_ASSOC) ?? null;
+    }
+
+    public static function add_meta($account, $key, $value)
+    {
+        $conn = sqlnew();
+        $sql = "INSERT INTO userv_account_meta (user_id, meta_name, meta_value) VALUES (:account, :key, :value)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute(["account" => strtolower($account), "key" => $key, "value" => $value]);
+        return $stmt->rowCount();
+    }
+    public static function del_meta($account, $key, $value)
+    {
+        $conn = sqlnew();
+        $sql = "DELETE FROM userv_account_meta WHERE LOWER(user_id) = :account AND meta_name = :key AND LOWER(meta_value) = :value";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute(["account" => strtolower($account), "key" => $key, "value" => strtolower($value)]);
+        return $stmt->rowCount();
+    }
+    public static function get_meta_all($account)
+    {
+        $conn = sqlnew();
+        $sql = "SELECT * FROM userv_account_meta WHERE LOWER(user_id) = :account";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute(["account" => strtolower($account)]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? null;
+    }
+
+    public static function get_meta_by_key($account, $key)
+    {
+        $conn = sqlnew();
+        $sql = "SELECT * FROM userv_account_meta WHERE LOWER(user_id) = :account AND meta_name = :key";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute(["account" => strtolower($account), "key" => $key]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? null;
     }
 }
 
