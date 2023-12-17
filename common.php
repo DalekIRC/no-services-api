@@ -1,9 +1,6 @@
 <?php
 
 require_once "config.php";
-require_once "class/db.php";
-require_once "class/account.php";
-require_once "class/channel.php";
 
 function verify_api_key_or_die($key = NULL)
 {

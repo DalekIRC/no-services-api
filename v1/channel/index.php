@@ -1,5 +1,9 @@
 <?php
 require_once("../../common.php");
+require_once "../class/account.php";
+require_once "../class/channel.php";
+require_once "../class/db.php";
+
 $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
 verify_api_key_or_die($key);
 

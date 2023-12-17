@@ -7,7 +7,10 @@ class Account {
     {
         $user = self::find_by("account", $name);
         if ($user)
-            $this->user = (object)["user" => $user->{0}, "meta" => self::get_meta_all($name)];
+        {
+            $this->user = (object)$user->{0};
+            $this->user->meta = (object)self::get_meta_all($name);
+        }
     }
 
     public static function Register($account, $email, $password, &$error, &$errorcode)
@@ -64,7 +67,7 @@ class Account {
         if (!$results || empty($results))
             return false;
         if (password_verify($password, $results[0]['password']))
-            return $results[0]['account_name'];
+            return new Account($results[0]['account_name']);
         return false;
     }
     /**
@@ -80,8 +83,8 @@ class Account {
         $conn = sqlnew();
         if ($type == "account")
         {
-            $stmt = $conn->prepare("SELECT * FROM userv_account WHERE account_name = :name LIMIT 1");
-            $stmt->execute(["name" => $lookup]);
+            $stmt = $conn->prepare("SELECT * FROM userv_account WHERE LOWER(account_name) = :name LIMIT 1");
+            $stmt->execute(["name" => strtolower($lookup)]);
             if ($stmt->rowCount())
             {
                 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -130,6 +133,11 @@ class Account {
         $stmt = $conn->prepare($sql);
         $stmt->execute(["account" => strtolower($account), "key" => $key]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? null;
+    }
+
+    function __toString()
+    {
+        return $this->user ? json_encode($this->user) : json_encode(["error" => "User not found"]);
     }
 }
 

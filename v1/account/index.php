@@ -1,5 +1,8 @@
 <?php
 require_once("../../common.php");
+require_once "../class/account.php";
+require_once "../class/channel.php";
+require_once "../class/db.php";
 
 $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
 verify_api_key_or_die($key);
@@ -11,8 +14,6 @@ $response = (object)[];
 if ($uid)
     $response->uid = $uid;
 
-foreach($d as $k => $v)
-    error_log("$k => $v");
 
 if ($d['method'] == "register")
 {
@@ -59,21 +60,22 @@ if ($d['method'] == "identify")
         $response->code = "INVALID_REQ";
         die_json($response);
     }
-    $i = 0;
+    $i = NULL;
     if (strstr($d['auth'],"@"))
         $i = Account::identify(null, $d['auth'], $d['password']);
     else
         $i = Account::identify($d['auth'], null, $d['password']);
 
-    if (!$i)
+    if (!$i->user)
     {
         $response->account = $d['auth'];
         $response->error = "Invalid credentials";
         $response->code = "BAD_LOGIN";
         die_json($response);
     }
+    $response->user = $i->user;
     $response->success = "Success";
-    $response->account = $i;
+    $response->account = $i->user->account_name;
     die_json($response);
 }
 
@@ -119,7 +121,7 @@ if ($d['method'] == "ajoin del")
 if ($d['method'] == "ajoin list")
 {
     $response->type = "list";
-    if (($list = Account::get_meta_by_key("Valware", "ajoin")))
+    if (($list = Account::get_meta_by_key($d['account'], "ajoin")))
     {
         $cleaned = [];
         foreach($list as $meta)
