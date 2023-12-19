@@ -135,6 +135,21 @@ class Account {
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? null;
     }
 
+    /**
+     * This so far is only useful for fetching the owner of a certfp
+     */
+    public static function get_single_meta_owner($meta_name, $meta_value)
+    {
+        $conn = sqlnew();
+        $sql = "SELECT * FROM userv_account_meta WHERE meta_value = :value AND meta_name = :name LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute(["value" => $meta_value, "name" => $meta_name]);
+        $ret = $stmt->fetchAll(PDO::FETCH_ASSOC) ?? null;
+        if (!$ret)
+            return false;
+        
+        return new Account($ret[0]['user_id']);
+    }
     function __toString()
     {
         return $this->user ? json_encode($this->user) : json_encode(["error" => "User not found"]);

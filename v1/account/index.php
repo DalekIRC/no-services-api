@@ -79,6 +79,31 @@ if ($d['method'] == "identify")
     die_json($response);
 }
 
+// sasl external
+if ($d['method'] == "identify cert")
+{
+    if (!$d['cert'])
+    {
+        $response->error = "Invalid request";
+        $response->code = "INVALID_REQ";
+        die_json($response);
+    }
+    
+    $i = Account::get_single_meta_owner("certfp", $d['cert']);
+
+    if (!$i->user)
+    {
+        $response->account = $d['auth'];
+        $response->error = "Invalid credentials";
+        $response->code = "BAD_LOGIN";
+        die_json($response);
+    }
+    $response->user = $i->user;
+    $response->success = "Success";
+    $response->account = $i->user->account_name;
+    die_json($response);
+}
+
 if ($d['method'] == "list")
 {
     $response->list = Account::list();
@@ -133,5 +158,52 @@ if ($d['method'] == "ajoin list")
     }
     $response->error = "Your auto-join list is empty";
     $response->code = "AJOIN_LIST_EMPTY";
+    die_json($response);
+}
+if ($d['method'] == "certfp add")
+{
+    $response->type = "add";
+    $response->cert = $d['cert'];
+    $lkup = Account::get_single_meta_owner("certfp", $d['cert']);
+    if ($lkup)
+    {
+        $response->error = "That certificate fingerprint already belongs to an account.";
+        $response->code = "CERTFP_ENTRY_EXISTS";
+        die_json($response);
+    }
+    if (Account::add_meta($d['account'], "certfp", $d['cert']))
+    {
+        $response->success = "Success";
+        die_json($response);
+    }
+}
+if ($d['method'] == "certfp del")
+{
+    $response->type = "del";
+    $response->cert = $d['cert'];
+    if (Account::del_meta($d['account'], "certfp", $d['cert']))
+    {
+        $response->success = "Success";
+        die_json($response);
+    }
+    $response->error = "Certificate fingerprint doesn't exist.";
+    $response->code = "CERTFP_ENTRY_DOES_NOT_EXIST";
+    die_json($response);
+}
+if ($d['method'] == "certfp list")
+{
+    $response->type = "list";
+    if (($list = Account::get_meta_by_key($d['account'], "certfp")))
+    {
+        $cleaned = [];
+        foreach($list as $meta)
+            $cleaned[] = $meta['meta_value'];
+
+        $response->success = "Success";
+        $response->list = (object)$cleaned;
+        die_json($response);
+    }
+    $response->error = "Your certificate fingerprint list is empty.";
+    $response->code = "CERTFP_LIST_EMPTY";
     die_json($response);
 }
