@@ -168,6 +168,16 @@ class Account {
 		
 		return new Account($ret[0]['user_id']);
 	}
+
+	public function setPassword($password)
+	{
+		$conn = sqlnew();
+		$sql = "UPDATE userv_account SET password = :password WHERE account_name = :me";
+		$stmt = $conn->prepare($sql);
+		$stmt->execute(["password" => $password, "me" => $this->user->account_name]);
+		return $stmt->rowCount();
+	}
+
 	function __toString()
 	{
 		return $this->user ? json_encode($this->user) : json_encode(["error" => "User not found"]);

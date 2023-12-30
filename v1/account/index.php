@@ -1,8 +1,5 @@
 <?php
-require_once("../../common.php");
-require_once "../class/account.php";
-require_once "../class/channel.php";
-require_once "../class/db.php";
+require_once "../common.php";
 
 $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
 verify_api_key_or_die($key);
@@ -221,5 +218,19 @@ if ($d['method'] == "certfp list")
 	}
 	$response->error = "Your certificate fingerprint list is empty.";
 	$response->code = "CERTFP_LIST_EMPTY";
+	die_json($response);
+}
+
+if ($d['method'] == "set password")
+{
+	$account = new Account($d['account']);
+	if ($account->setPassword($d['password']))
+	{
+		$response->account = $account->user->account_name;
+		$response->success = "Success";
+		die_json($response);
+	}
+	$response->error = "Could not update the password for account ".$d['account'];
+	$response->code = "UPDATE_FAILED";
 	die_json($response);
 }
