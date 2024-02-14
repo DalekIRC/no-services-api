@@ -1,6 +1,5 @@
 <?php
 require_once "../common.php";
-
 $key = $_SERVER['HTTP_X_API_KEY'] ?? null;
 verify_api_key_or_die($key);
 
@@ -10,6 +9,14 @@ $uid = (isset($d['uid'])) ? $d['uid'] : null;
 $response = (object)[];
 if ($uid)
 	$response->uid = $uid;
+if (isset($d['account']))
+	$response->account = $d['account'];
+
+if (isset($d['responder']))
+	$response->responder = $d['responder'];
+
+error_log(str_replace("\\n", "\n", var_export($d,true)));
+
 
 
 if ($d['method'] == "register")
@@ -47,6 +54,7 @@ if ($d['method'] == "find")
 	$response->account = $user->user->account_name;
 	$response->user = $user->user;
 	$response->success = "Success";
+	error_log(var_export($response,true));
 	die_json($response);
 }
 
@@ -64,7 +72,7 @@ if ($d['method'] == "identify")
 	else
 		$i = Account::identify($d['auth'], null, $d['password']);
 
-	if (!isset($i->user))
+	if (!$i)
 	{
 		$response->account = $d['auth'];
 		$response->error = "Invalid credentials";
@@ -104,9 +112,9 @@ if ($d['method'] == "identify cert")
 	
 	$i = Account::get_single_meta_owner("certfp", $d['cert']);
 
-	if (!$i->user)
+	if (!$i)
 	{
-		$response->account = $d['auth'];
+		$response->account = $d['auth'] ?? $response->account;
 		$response->error = "Invalid credentials";
 		$response->code = "BAD_LOGIN";
 		die_json($response);

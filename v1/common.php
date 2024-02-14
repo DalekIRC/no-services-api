@@ -5,6 +5,7 @@ require_once "../../config.php";
 require_once "class/account.php";
 require_once "class/channel.php";
 require_once "class/db.php";
+require_once "translate/translate.php";
 function verify_api_key_or_die($key = NULL)
 {
     global $config;
@@ -37,5 +38,6 @@ function permission_denied()
 
 function die_json($i)
 {
+    error_log(var_export($i, true));
     die(json_encode($i));
 }
