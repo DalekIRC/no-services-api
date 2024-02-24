@@ -1,5 +1,5 @@
 <?php
-require_once("../../common.php");
+require_once("../common.php");
 require_once "../class/account.php";
 require_once "../class/channel.php";
 require_once "../class/db.php";
