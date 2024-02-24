@@ -14,6 +14,12 @@ $uid = (isset($d['uid'])) ? $d['uid'] : null;
 if (!$uid)
 	die(json_encode(["error" => "Invalid request"]));
 
+if (isset($d['account']))
+	$response->account = $d['account'];
+
+if (isset($d['responder']))
+	$response->responder = $d['responder'];
+
 // our response object
 $response = (object)[];
 $response->uid = $d['uid'];
@@ -30,7 +36,6 @@ if ($d['method'] == "register")
 	$errorcode = NULL;
 	$c = Channel::Register($d['channel'], $error, $errorcode);
 	$response->channel = $d['channel'];
-	$response->account = $d['account'];
 	if (!$c)
 	{
 		$response->error = "There has been an error.";
